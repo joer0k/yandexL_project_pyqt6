@@ -35,7 +35,7 @@ MONTHS = ['января', 'февраля', 'марта', 'апреля', 'ма�
 
 CURRENT_USER_ID = -1
 
-
+#функция проверяет телефон на корректность
 def check_phone(phone):
     phone = ''.join(phone)
     if len([elem for elem in phone if elem.isdigit()]) != 11:
@@ -61,12 +61,12 @@ def check_phone(phone):
         return 'OK'
     return 'Неверный формат номера'
 
-
+#согласует форму слова с числом
 def need_form_word(number, word):
     morph = pymorphy3.MorphAnalyzer()
     return str(morph.parse(word)[0].make_agree_with_number(number).word)
 
-
+#проверяет пароль согласно требованиям
 def check_password(passw):
     while True:
         if len(passw) > 8:
@@ -93,7 +93,8 @@ class Log_in_wndw(QMainWindow, log_in.Ui_MainWindow):
         self.register_btn.clicked.connect(self.regist)
         self.setWindowTitle('TravelEase')
         self.setWindowIcon(QIcon('icon_photo.jpg'))
-
+    
+    #проверяет корректность введенных данных и, если все хорошо, запускает main-wndw
     def run(self):
         global CURRENT_USER_ID
         if self.edit_login.text() != '' and self.edit_passw.text() != '':
@@ -121,6 +122,7 @@ class reg(QWidget, register.Ui_Form):
         self.buttonBox.accepted.connect(self.confirm_register)
         self.db = sqlite3.connect('users.db')
 
+    #проверяет логин на корректность
     def check_name(self):
         if self.name_edit.text() != '' or self.name_edit.text().replace(' ', '') != '':
             if len(self.name_edit.text()) >= 3:
@@ -129,7 +131,7 @@ class reg(QWidget, register.Ui_Form):
                 return 'Имя слишком короткое'
         else:
             return 'Имя должно состоять из букв или цифр'
-
+    #проверяет пароль на корректность
     def check_passw(self):
         if len(self.psw_edit.text()) > 8:
             if any(elem.isupper() for elem in self.psw_edit.text()) and any(
@@ -145,13 +147,14 @@ class reg(QWidget, register.Ui_Form):
                 return 'Символы должны быть разных регистров'
         else:
             return 'Длина пароля должна быть больше 8 символов'
-
+    #проверяет почту на корректность
     def check_mail(self):
         if '@' in self.email_edit.text() and self.email_edit.text().count('@') == 1:
             return 'OK'
         else:
             return 'Пароль должен содержать "@"'
-
+    
+    #проверяет нет ли уже такого же аккаунта
     def check_similar(self):
         cur = self.db.cursor()
         all_data = cur.execute('SELECT login, password, email, phone FROM users').fetchall()
@@ -205,7 +208,7 @@ class main_wndw(QMainWindow, main_window.Ui_MainWindow):
     def profile(self):
         self.w = profil()
         self.w.show()
-
+    #проверяет корректность введенных в поля данных
     def search(self):
         flag = 0
         if self.location.text():
@@ -222,7 +225,7 @@ class main_wndw(QMainWindow, main_window.Ui_MainWindow):
             self.w.show()
         else:
             self.label_errors.setText('Произошла ошибка! Заполните все поля формы')
-
+    #открывает новое окно для выбора даты
     def choose_date(self):
         sender = self.sender()
         dialog = calendar_dial()
@@ -259,7 +262,7 @@ class main_wndw(QMainWindow, main_window.Ui_MainWindow):
         else:
             pass
         self.label_errors.setText('')
-
+    #открывает новое окно с выбором кол-ва людей и номеров
     def num_people(self):
         dialog = number_people_dial()
         dialog.exec()
@@ -306,7 +309,7 @@ class profil(QWidget, profile.Ui_Form):
         self.fill_edit_books()
         self.setWindowTitle('Профиль')
         self.setWindowIcon(QIcon('icon_photo.jpg'))
-
+    #подтягивает с базы данных брони пользователя и выводит в таблице
     def fill_edit_books(self):
         self.all_books.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         cur = self.db_users.cursor()
@@ -430,7 +433,7 @@ class description(QWidget, hotel_description.Ui_Form):
         self.fill_edittext()
         self.comboBox.currentTextChanged.connect(self.fill_edittext)
         self.btn_book.clicked.connect(self.final_book)
-
+    #меняет картинку нажатием кнопки
     def change_photo(self):
         if self.number_photo == 1:
             self.photo.setPixmap(QPixmap(f'photo_hotels/{self.id}_room.jpg').scaled(281, 171))
@@ -538,6 +541,3 @@ if __name__ == '__main__':
     ex.show()
     sys.excepthook = except_hook
     sys.exit(app.exec())
-
-# почти все готово. осталось сделать:
-# подпправить фронтенд
